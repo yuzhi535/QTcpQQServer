@@ -2,6 +2,22 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QPushButton>
+#include <QListWidget>
+#include <QLabel>
+#include <QLineEdit>
+#include <QWidget>
+#include <QGridLayout>
+#include <QFile>
+#include <QDir>
+
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+
+
+#include "myserver.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -15,7 +31,23 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void on_button_1_clicked();
+//    void on_button_2_clicked();
+
 private:
     Ui::MainWindow *ui;
+    QPushButton button_1;     //连接
+    QPushButton button_2;     //退出
+    QLabel label_1;           //ip
+    QLabel label_2;           //port
+    QLineEdit line_1;         //ip
+    QLineEdit line_2;         //port
+    QListWidget text;         //show the info
+    QListWidget sysLog;       //show the connection info
+    QWidget contral;          //contral widget
+    QGridLayout m_layout;     //layout
+
+    MyServer* server;
 };
 #endif // MAINWINDOW_H
