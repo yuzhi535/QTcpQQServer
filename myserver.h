@@ -9,6 +9,8 @@
 #include "myclient.h"
 #include <QDir>
 #include <QList>
+#include <QApplication>
+#include <QEventLoop>
 #include "mythread.h"
 
 class MyServer : public QTcpServer
@@ -21,6 +23,7 @@ public:
     void addUserInfo(QString& name, QString& password);
     bool isInUser(QString name);
     void parseName(QString& str, QString& name, QString& pass);
+    void mySleep(qint32 sec);
 
 
 protected:
@@ -33,18 +36,14 @@ signals:
     void oldUser(QString user);
 
 public slots:
-    void closeClient();
-    void sendFile(QByteArray& file, QString id);
+    void sendFile(QByteArray& file);
     void old_User(QString user, qint32 id);
     void newMsg(QString msg);
-
 
 private:
     QTcpServer* myServer;
     QList<MyClient*> myClient;
-    QVector<myThread*> threadPool;
     QMap<QString, QString> user;     //name  password
-    QString tmp;    //临时存储用户名
 };
 
 #endif // MYSERVER_H

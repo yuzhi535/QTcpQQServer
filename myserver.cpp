@@ -27,7 +27,7 @@ void MyServer::parseName(QString& str, QString& name, QString& pass)
         if (str[i] == '\b' && flag)
         {
             flag = false;
-            name = str.mid(j, i - j + 1);
+            name = str.mid(j, i - j);
             j = i + 1;
         }
         else if (str[i] == '\b')
@@ -35,11 +35,18 @@ void MyServer::parseName(QString& str, QString& name, QString& pass)
     }
 }
 
+void MyServer::mySleep(qint32 sec)
+{
+    QTime time1 = QTime::currentTime().addMSecs(sec);
+    while (QTime::currentTime() < time1) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    }
+}
+
 void MyServer::incomingConnection(qintptr socketDescriptor)
 {
     MyClient* client = new MyClient();
     client->setSocketDescriptor(socketDescriptor);
-    myClient.append(client);
 
     QString name, pass, login;
     connect(client, &QAbstractSocket::readyRead, [&]() { name = client->readAll();});
@@ -50,25 +57,31 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
 
     disconnect(client, &QAbstractSocket::readyRead, 0, 0);
     qDebug() << client->getId();
-    myThread* m_thread = new myThread(client, client->getId());
+    myThread* m_thread = new myThread(client);
     client->moveToThread(m_thread);
+    myClient.append(client);
+
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)   //发送用户信息
+    {
+        auto j = myClient.begin();
+        QString str = (*j)->getName().toUtf8();
+        for (; j != myClient.end(); ++j)
+        {
+            str = "\a" + str;
+            str += "\a";
+        }
+        qDebug() << str;
+        (*i)->write(str.toUtf8());
+    }
 
     connect(m_thread, SIGNAL(newUser(QString)), this, SIGNAL(newUser(QString)));
     connect(m_thread, SIGNAL(newMsg(QString)), this, SLOT(newMsg(QString)));
     connect(m_thread, SIGNAL(olduser(QString, qint32)), this, SLOT(old_User(QString, qint32)));
 
-    for (auto i = myClient.begin(); i != myClient.end(); ++i)
-        qDebug() << (*i)->getId();
-    threadPool.append(m_thread);
     m_thread->start();
 }
 
-void MyServer::closeClient()
-{
-
-}
-
-void MyServer::sendFile(QByteArray& flle, QString id)
+void MyServer::sendFile(QByteArray& flle)
 {
 
 }
@@ -76,7 +89,8 @@ void MyServer::sendFile(QByteArray& flle, QString id)
 void MyServer::newMsg(QString msg)
 {
     emit new_Msg(msg);
-    qDebug() << myClient.size() << "qwerqwerqwer";
+    msg = "\b" + msg;
+    msg += "\b";
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
         (*i)->write(msg.toUtf8());
 }
@@ -84,15 +98,19 @@ void MyServer::newMsg(QString msg)
 void MyServer::old_User(QString user, qint32 id)
 {
     emit oldUser(user);
+//    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+//    {
+//        qDebug() << (*i)->getId();
+//        if ((*i)->getId() == id)
+//        {
+//            myClient.erase(i);
+//        }
+//    }
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
     {
         qDebug() << (*i)->getId();
-        if ((*i)->getId() == id)
-        {
-            myClient.erase(i);
-        }
-    }
-    for (auto i = myClient.begin(); i != myClient.end(); ++i)
         (*i)->write(user.toUtf8());
+        mySleep(100);
+    }
 }
 

@@ -11,10 +11,13 @@ class myThread : public QThread
     Q_OBJECT
 public:
     myThread(MyClient* client, qint32 id);
+    myThread(MyClient* client);
+    myThread();
     ~myThread();
     QString intToQString(qint32 num);
     void setName(QString& str);
     QString getName();
+    void setSocketDescriptor(qintptr target);
 
 
 
