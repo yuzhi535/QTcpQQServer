@@ -5,6 +5,7 @@
 #include <QThread>
 #include "myclient.h"
 #include <QTime>
+#include <QDir>
 
 class myThread : public QThread
 {
@@ -18,7 +19,8 @@ public:
     void setName(QString& str);
     QString getName();
     void setSocketDescriptor(qintptr target);
-
+    void createFile(QByteArray& dat, QString suffix);
+    QString intToString(int num);
 
 
 protected:
@@ -28,10 +30,10 @@ signals:
     void newUser(QString name);
     void newMsg(QString str);
     void olduser(QString user, qint32 id);
+    void new_img(QByteArray img);
 
 public slots:
     void sendMsg();
-    void sendImg();
     void disConnect();
 
 

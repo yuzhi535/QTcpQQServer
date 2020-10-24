@@ -38,7 +38,8 @@ void MyServer::parseName(QString& str, QString& name, QString& pass)
 void MyServer::mySleep(qint32 sec)
 {
     QTime time1 = QTime::currentTime().addMSecs(sec);
-    while (QTime::currentTime() < time1) {
+    while (QTime::currentTime() < time1)
+    {
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
     }
 }
@@ -50,7 +51,7 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
 
     QString name, pass, login;
     connect(client, &QAbstractSocket::readyRead, [&]() { name = client->readAll();});
-    client->waitForReadyRead();     //延时3e4 msecs
+    client->waitForReadyRead();     //延时 3e4 msecs
     qDebug() << "success connect";
     parseName(name, login, pass);
     client->setName(login); client->setPass(pass);
@@ -61,29 +62,46 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
     client->moveToThread(m_thread);
     myClient.append(client);
 
-    for (auto i = myClient.begin(); i != myClient.end(); ++i)   //发送用户信息
-    {
-        auto j = myClient.begin();
-        QString str = (*j)->getName().toUtf8();
-        for (; j != myClient.end(); ++j)
-        {
-            str = "\a" + str;
-            str += "\a";
-        }
-        qDebug() << str;
-        (*i)->write(str.toUtf8());
-    }
-
     connect(m_thread, SIGNAL(newUser(QString)), this, SIGNAL(newUser(QString)));
     connect(m_thread, SIGNAL(newMsg(QString)), this, SLOT(newMsg(QString)));
     connect(m_thread, SIGNAL(olduser(QString, qint32)), this, SLOT(old_User(QString, qint32)));
+    connect(m_thread, SIGNAL(new_img(QByteArray)), this, SLOT(sendImg(QByteArray)));
 
-    m_thread->start();
+    m_thread->start();      //开始次线程
 }
 
-void MyServer::sendFile(QByteArray& flle)
+QString intToQString(int num)
 {
+    QString re;
+    while (num)
+    {
+        re = (char)(num % 10) + 48 + re;
+        num /= 10;
+    }
+    return re;
+}
 
+void MyServer::sendImg(QByteArray file)
+{
+    auto len = file.size();
+    QByteArray s;
+    while (len)                             //先发送图片大小，让服务端做好准备
+    {
+        s = (char)(len % 10 + 48) + s;
+        len /= 10;
+    }
+    s.insert(0, '\r');
+    s.append('\r');
+
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+    {
+        (*i)->write(s);
+        (*i)->waitForBytesWritten();
+        QThread::msleep(100);
+        (*i)->write(file);
+        (*i)->waitForBytesWritten();
+        QThread::msleep(100);
+    }
 }
 
 void MyServer::newMsg(QString msg)

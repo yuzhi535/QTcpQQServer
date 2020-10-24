@@ -36,7 +36,7 @@ signals:
     void oldUser(QString user);
 
 public slots:
-    void sendFile(QByteArray& file);
+    void sendImg(QByteArray img);
     void old_User(QString user, qint32 id);
     void newMsg(QString msg);
 
