@@ -3,11 +3,12 @@
 
 #include <QObject>
 #include <QTcpServer>
-#include <QList>
+#include <QMap>
 #include <QMessageBox>
 #include <QByteArray>
 #include "myclient.h"
 #include <QDir>
+#include <QList>
 #include "mythread.h"
 
 class MyServer : public QTcpServer
@@ -16,30 +17,34 @@ class MyServer : public QTcpServer
 public:
     MyServer();
     ~MyServer();
+    void recvUserInfo(QMap<QString, QString>& tmp);
+    void addUserInfo(QString& name, QString& password);
+    bool isInUser(QString name);
+    void parseName(QString& str, QString& name, QString& pass);
+
 
 protected:
     void incomingConnection(qintptr socketDescriptor);
 
 signals:
     void info(QString data, QString id);
-    void addItem(QString name);
-    void addFile(QByteArray& file, QString id);
-
-signals:
-    void newUser(QString id);     //新用户
-    void deleteUser(QString id);  //断开连接
-    void newMsg(QString msg);
-    void newFile(QString file);   //数据类型有待考虑
-
+    void new_Msg(QString msg);    //to mainWindow
+    void newUser(QString msg);
+    void oldUser(QString user);
 
 public slots:
-    void addInfo(QString data, QString id);
     void closeClient();
     void sendFile(QByteArray& file, QString id);
+    void old_User(QString user, qint32 id);
+    void newMsg(QString msg);
+
 
 private:
     QTcpServer* myServer;
-    QMap<QString, MyClient*> client;
+    QList<MyClient*> myClient;
+    QVector<myThread*> threadPool;
+    QMap<QString, QString> user;     //name  password
+    QString tmp;    //临时存储用户名
 };
 
 #endif // MYSERVER_H

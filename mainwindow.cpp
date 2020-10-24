@@ -11,8 +11,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    //ui设计
     ui->setupUi(this);
-
     button_1.setText(QString("监听"));
     button_2.setText(QString("退出"));
     //set shortcut
@@ -49,11 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_layout.addWidget(&text, 6, 0, 10, 12);
 
     line_1.setText(QString("127.0.0.1"));
-    line_2.setText(QString("8080"));
-
-//    qDebug() << m_layout.rowCount() << m_layout.columnCount();
-
-//    qDebug() << label_1.size().width() << label_1.size().height();
+    line_2.setText(QString("18080"));
 
     connect(&button_1, &QPushButton::clicked, this, &MainWindow::on_button_1_clicked);
     connect(&button_2, &QPushButton::clicked, [&](){
@@ -64,7 +60,12 @@ MainWindow::MainWindow(QWidget *parent)
     });
     server = new MyServer();
 
+    connect(server, SIGNAL(newUser(QString)), this, SLOT(newUser(QString)));   //新用户
+    connect(server, SIGNAL(new_Msg(QString)), this, SLOT(newMsg(QString)));    //新消息
+    connect(server, SIGNAL(oldUser(QString)), this, SLOT(old_user(QString)));  //断开连接
 
+
+    //用户信息处理
     QMap<QString, QString> login;
     QFile loginFile(QString("login.json"));
     loginFile.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -74,10 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
         loginFile.close();
         QJsonParseError err;
         QJsonDocument doc = QJsonDocument::fromJson(value.toUtf8(), &err);
-        if (err.error != QJsonParseError::NoError)
+        if (err.error != QJsonParseError::NoError)     //若解析错误
         {
-//            std::cout << QDir::currentPath().toStdString() << std::endl;
-//            qDebug() << "can't open the json file!";
             printf("can't open the json file!\n");
             close();
             exit(0);
@@ -90,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent)
                 QJsonValue val = arr.at(i);
                 qDebug() << val["name"];
                 qDebug() << val["password"];
+                login[val["name"].toString()] = val["password"].toString();    //登记用户信息
             }
         }
     }
@@ -99,7 +99,6 @@ MainWindow::MainWindow(QWidget *parent)
         this->close();
         exit(0);
     }
-
 }
 
 MainWindow::~MainWindow()
@@ -116,20 +115,24 @@ void MainWindow::on_button_1_clicked()
         bool flag = server->listen(QHostAddress(line_1.text()), line_2.text().toUInt());
         if (!flag)
             QMessageBox::warning(this, tr("警告"), tr("监听失败"));
-        /*
-        a new client info
-        connect failed
-        the info client send
-        show the info client send
-        */
-        //        connect(server,)
-        else
-        {
-
-        }
     }
     else
     {
         QMessageBox::warning(this, QString("错误"), QString("您已开始监听!"));
     }
+}
+
+void MainWindow::newUser(QString name)
+{
+    text.addItem(name);
+}
+
+void MainWindow::newMsg(QString msg)
+{
+    text.addItem(msg);
+}
+
+void MainWindow::old_user(QString user)
+{
+    text.addItem(user);
 }

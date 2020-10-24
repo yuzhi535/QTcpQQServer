@@ -31,9 +31,14 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+signals:
+
+
 public slots:
     void on_button_1_clicked();
-//    void on_button_2_clicked();
+    void newUser(QString name);
+    void newMsg(QString msg);
+    void old_user(QString user);
 
 private:
     Ui::MainWindow *ui;
