@@ -3,26 +3,27 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QThread>
 
 class MyClient : public QTcpSocket
 {
     Q_OBJECT
 public:
     MyClient();
-//    MyClient(MyClient&);
     ~MyClient();
     void setName(QString name);
     void setPass(QString ass);
     QString getName();
-    static qint32 get_id();
-    static void set_id(qint32 id);
+
+    QString getPass() { return m_pass; }
     qint32 getId();
-    void setId(qint32 id);
+    void setId(qint32 id) { m_id = id; }
 
 private:
-    static qint32 m_id;
+    QTcpSocket* socket;
     QString m_name;
     QString m_pass;
+    qint32 m_id;
 };
 
 #endif // MYCLIENT_H

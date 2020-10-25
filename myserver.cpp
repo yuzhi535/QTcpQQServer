@@ -4,6 +4,7 @@
 MyServer::MyServer()
 {
     myServer = new QTcpServer();
+    index = 10000;
 }
 
 MyServer::~MyServer()
@@ -24,13 +25,13 @@ void MyServer::parseName(QString& str, QString& name, QString& pass)
     int j = 1;
     for (int i = j; i < str.size(); ++i)
     {
-        if (str[i] == '\b' && flag)
+        if (str[i] == '\t' && flag)
         {
             flag = false;
             name = str.mid(j, i - j);
             j = i + 1;
         }
-        else if (str[i] == '\b')
+        else if (str[i] == '\t')
             pass = str.mid(j, i - j);
     }
 }
@@ -46,26 +47,44 @@ void MyServer::mySleep(qint32 sec)
 
 void MyServer::incomingConnection(qintptr socketDescriptor)
 {
-    MyClient* client = new MyClient();
+    MyClient** tmp_client = new MyClient*();
+    *tmp_client = new MyClient();
+    MyClient* client = *tmp_client;    //注意变量生命周期
     client->setSocketDescriptor(socketDescriptor);
+    qint32 id = getIndex();
+    MyThread* m_thread = new MyThread(client, id);
+    (*tmp_client)->setId(id);
+
 
     QString name, pass, login;
-    connect(client, &QAbstractSocket::readyRead, [&]() { name = client->readAll();});
-    client->waitForReadyRead();     //延时 3e4 msecs
+    client->waitForReadyRead();     //延时 3e4 msecs，进行阻塞
+    name = client->readAll();
     qDebug() << "success connect";
     parseName(name, login, pass);
     client->setName(login); client->setPass(pass);
 
-    disconnect(client, &QAbstractSocket::readyRead, 0, 0);
-    qDebug() << client->getId();
-    myThread* m_thread = new myThread(client);
-    client->moveToThread(m_thread);
-    myClient.append(client);
 
-    connect(m_thread, SIGNAL(newUser(QString)), this, SIGNAL(newUser(QString)));
+    m_thread->setName(login);
+    user[login] = pass;
+
+    login = QTime::currentTime().toString() + ":  " + login + ":  连接服务器";
+
+    client->write(login.toUtf8());
+
+    emit newUser(login);
+
+    qDebug() << (*tmp_client)->getId() << "asdfasdfasdfasdfasdf";
+
+    myClient.push_back(*tmp_client);
+
+//    (*tmp_client)->moveToThread(m_thread);
+
     connect(m_thread, SIGNAL(newMsg(QString)), this, SLOT(newMsg(QString)));
     connect(m_thread, SIGNAL(olduser(QString, qint32)), this, SLOT(old_User(QString, qint32)));
     connect(m_thread, SIGNAL(new_img(QByteArray)), this, SLOT(sendImg(QByteArray)));
+
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+        qDebug() << (*i)->getId();
 
     m_thread->start();      //开始次线程
 }
@@ -83,6 +102,10 @@ QString intToQString(int num)
 
 void MyServer::sendImg(QByteArray file)
 {
+    emit showImg(file);
+
+
+
     auto len = file.size();
     QByteArray s;
     while (len)                             //先发送图片大小，让服务端做好准备
@@ -115,15 +138,17 @@ void MyServer::newMsg(QString msg)
 
 void MyServer::old_User(QString user, qint32 id)
 {
+
     emit oldUser(user);
-//    for (auto i = myClient.begin(); i != myClient.end(); ++i)
-//    {
-//        qDebug() << (*i)->getId();
-//        if ((*i)->getId() == id)
-//        {
-//            myClient.erase(i);
-//        }
-//    }
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+    {
+        if ((*i)->getId() == id)
+        {
+            myClient.erase(i);
+        }
+        if (myClient.size() == 0)
+            break;
+    }
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
     {
         qDebug() << (*i)->getId();

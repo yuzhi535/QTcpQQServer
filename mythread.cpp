@@ -1,40 +1,16 @@
 #include "mythread.h"
 
-myThread::myThread(MyClient* client, qint32 id)
+MyThread::MyThread()
 {
     m_thread = new QThread();
-    m_client = client;
-    m_client->setId(id);
 }
 
-myThread::myThread(MyClient* client)
-{
-    m_thread = new QThread();
-    m_client = client;
-}
-
-myThread::myThread()
-{
-    m_thread = new QThread();
-    m_client = new MyClient();
-}
-
-myThread::~myThread()
+MyThread::~MyThread()
 {
 
 }
 
-void myThread::setName(QString &str)
-{
-    name = str;
-}
-
-QString myThread::getName()
-{
-    return name;
-}
-
-QString myThread::intToQString(qint32 num)
+QString MyThread::intToQString(qint32 num)
 {
     QString re;
     while (num)
@@ -46,27 +22,30 @@ QString myThread::intToQString(qint32 num)
 }
 
 
-void myThread::run()
+void MyThread::run()
 {
-//    m_client->setReadBufferSize(0);
-
-    if (m_client->isValid())
+    socket->setReadBufferSize(0);   //缓冲区无限大
+    if (socket->isValid())
     {
-        if (m_client->waitForConnected())
+        if (socket->waitForConnected())
         {
             QTime time = QTime::currentTime();
             //将新连接显示到屏幕上
 
-            emit newUser(time.toString() + "  " + m_client->getName() + "连接上服务器!");
+            emit newUser(time.toString() + "  " + getName() + "连接上服务器!");
 
-            connect(m_client, SIGNAL(readyRead()), this, SLOT(sendMsg()));
-            connect(m_client, &QAbstractSocket::disconnected, this, &myThread::disConnect);
+            connect(socket, SIGNAL(readyRead()), this, SLOT(sendMsg()));
+            connect(socket, &QAbstractSocket::disconnected, this, &MyThread::disConnect);
+        }
+        else
+        {
+            qDebug() << "连接无效";
         }
     }
     exec();
 }
 
-QString myThread::intToString(int num)
+QString MyThread::intToString(int num)
 {
     QString re;
     while (num)
@@ -77,16 +56,16 @@ QString myThread::intToString(int num)
     return re;
 }
 
-void myThread::sendMsg()
+void MyThread::sendMsg()
 {
     QTime time = QTime::currentTime();
-    QByteArray data = m_client->readAll();
+    QByteArray data = socket->readAll();
     if (!data.isEmpty())
     {
         QString msg = data;
         if (msg.size() != 0 && msg[0] != '\r')
         {
-            emit newMsg(time.toString() + " " + m_client->getName() + ": " + msg);
+            emit newMsg(time.toString() + " " + getName() + ": " + msg);
             createFile(data, ".txt");
         }
         else
@@ -105,17 +84,17 @@ void myThread::sendMsg()
                 QTime time(QTime::currentTime());
                 while (size > data.size())
                 {
+                    data += socket->readAll();
                     if (time.secsTo(QTime::currentTime()) > 3)
                     {
-                        emit newMsg(time.toString() + " " + m_client->getName() + ": " + "接收图片失败，请重发");
+                        emit newMsg(time.toString() + " " + getName() + ": " + "接收图片失败，请重发");
                         flag = false;
                         break;
                     }
-                    data += m_client->readAll();
                 }
                 if (flag)
                 {
-                    emit newMsg(time.toString() + " " + m_client->getName() + ": " + tr("上传了一张图片"));
+                    emit newMsg(time.toString() + " " + getName() + ": " + tr("上传了一张图片"));
                     //创建文件
                     createFile(data, ".png");
                     emit new_img(data);
@@ -125,21 +104,24 @@ void myThread::sendMsg()
     }
 }
 
-void myThread::disConnect()
+void MyThread::disConnect()
 {
     QString msg(": 断开连接");
-    emit olduser(m_client->getName() + msg, m_client->getId());
-//    this->deleteLater();
+
+    emit olduser( QTime::currentTime().toString() + ": " + getName() + msg, getIndex());
+
+    disconnect(this, SIGNAL(newMsg(QString)), 0, 0);
+    disconnect(this, SIGNAL(olduser(QString, qint32)), 0, 0);
+    disconnect(this, SIGNAL(new_img(QByteArray)), 0, 0);
+    moveToThread(QApplication::instance()->thread());
+    quit();
+    wait();
+    deleteLater();
 }
 
-void myThread::setSocketDescriptor(qintptr target)
+void MyThread::createFile(QByteArray &data, QString suffix)
 {
-    m_client->setSocketDescriptor(target);
-}
-
-void myThread::createFile(QByteArray &data, QString suffix)
-{
-    QString th = m_client->getName();
+    QString th = getName();
     th = QString("/") + th;
     QString path = QDir::currentPath() + th;   //存储到本地文件夹
     path = QDir::toNativeSeparators(path);

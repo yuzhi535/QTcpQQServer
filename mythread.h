@@ -6,21 +6,28 @@
 #include "myclient.h"
 #include <QTime>
 #include <QDir>
+#include <QApplication>
 
-class myThread : public QThread
+class MyThread : public QThread
 {
     Q_OBJECT
 public:
-    myThread(MyClient* client, qint32 id);
-    myThread(MyClient* client);
-    myThread();
-    ~myThread();
+    MyThread(MyClient* tcp, qint32 id) : socket(tcp), m_id(id) {
+        m_thread = new QThread();
+    }
+    MyThread();
+    ~MyThread();
     QString intToQString(qint32 num);
-    void setName(QString& str);
-    QString getName();
-    void setSocketDescriptor(qintptr target);
+    void setName(QString& str) {name = str; }
+    QString getName() { return name; }
+    void setSocketDescriptor(qintptr target) { socket->setSocketDescriptor(target); }
     void createFile(QByteArray& dat, QString suffix);
     QString intToString(int num);
+    qint32 getId() {return m_id; }
+    qint32 getIndex() {
+        return m_id;
+    }
+    void setIndex(qint32 num) { m_id = num; }
 
 
 protected:
@@ -38,9 +45,10 @@ public slots:
 
 
 private:
+    MyClient* socket;
     QThread* m_thread;
-    MyClient* m_client;
     QString name;
+    qint32 m_id;
 };
 
 #endif // MYTHREAD_H

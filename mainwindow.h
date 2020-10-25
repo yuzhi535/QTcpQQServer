@@ -6,10 +6,12 @@
 #include <QListWidget>
 #include <QLabel>
 #include <QLineEdit>
+#include <QGraphicsView>
 #include <QWidget>
 #include <QGridLayout>
 #include <QFile>
 #include <QDir>
+#include <QBuffer>
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -39,6 +41,7 @@ public slots:
     void newUser(QString name);
     void newMsg(QString msg);
     void old_user(QString user);
+    void show_img(QByteArray img);
 
 private:
     Ui::MainWindow *ui;
@@ -49,9 +52,9 @@ private:
     QLineEdit line_1;         //ip
     QLineEdit line_2;         //port
     QListWidget text;         //show the info
-    QListWidget sysLog;       //show the connection info
     QWidget contral;          //contral widget
     QGridLayout m_layout;     //layout
+    QGraphicsView* view;
 
     MyServer* server;
 };

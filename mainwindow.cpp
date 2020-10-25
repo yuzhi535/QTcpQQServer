@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     //ui设计
+    view = new QGraphicsView(this);
+    view->setStatusTip(QString("显示图片"));
     ui->setupUi(this);
     button_1.setText(QString("监听"));
     button_2.setText(QString("退出"));
@@ -36,8 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     label_1.setAlignment(Qt::AlignCenter);
     label_2.setStatusTip(tr("port"));
     label_2.setAlignment(Qt::AlignCenter);
-    text.setStatusTip(QString("the info listened"));
-    sysLog.setStatusTip(QString("the info system generate"));
+    text.setStatusTip(QString("显示信息"));
 
     m_layout.addWidget(&button_1, 1, 14, 1, 2);    //connect
     m_layout.addWidget(&button_2, 2, 14, 1, 2);    //exit
@@ -45,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_layout.addWidget(&label_2, 2, 6, 1, 1);
     m_layout.addWidget(&line_1, 1, 7, 1, 7);
     m_layout.addWidget(&line_2, 2, 7, 1, 7);
-    m_layout.addWidget(&sysLog, 6, 12, 10, 8);
+    m_layout.addWidget(view, 6, 12, 10, 8);
     m_layout.addWidget(&text, 6, 0, 10, 12);
 
     line_1.setText(QString("127.0.0.1"));
@@ -63,42 +64,43 @@ MainWindow::MainWindow(QWidget *parent)
     connect(server, SIGNAL(newUser(QString)), this, SLOT(newUser(QString)));   //新用户
     connect(server, SIGNAL(new_Msg(QString)), this, SLOT(newMsg(QString)));    //新消息
     connect(server, SIGNAL(oldUser(QString)), this, SLOT(old_user(QString)));  //断开连接
+    connect(server, SIGNAL(showImg(QByteArray)), this, SLOT(show_img(QByteArray)));  //显示图片
 
 
     //用户信息处理
-    QMap<QString, QString> login;
-    QFile loginFile(QString("login.json"));
-    loginFile.open(QIODevice::ReadOnly | QIODevice::Text);
-    if (loginFile.isOpen())
-    {
-        QString value = loginFile.readAll();
-        loginFile.close();
-        QJsonParseError err;
-        QJsonDocument doc = QJsonDocument::fromJson(value.toUtf8(), &err);
-        if (err.error != QJsonParseError::NoError)     //若解析错误
-        {
-            printf("can't open the json file!\n");
-            close();
-            exit(0);
-        }
-        else
-        {
-            QJsonArray arr = doc.array();
-            for (int i = 0; i < arr.size(); ++i)
-            {
-                QJsonValue val = arr.at(i);
-                qDebug() << val["name"];
-                qDebug() << val["password"];
-                login[val["name"].toString()] = val["password"].toString();    //登记用户信息
-            }
-        }
-    }
-    else    // 其实应该不会发生
-    {
-        QMessageBox::information(this, QString("错误"), QString("无法获取用户信息，即将关闭!\n"));
-        this->close();
-        exit(0);
-    }
+//    QMap<QString, QString> login;
+//    QFile loginFile(QString("login.json"));
+//    loginFile.open(QIODevice::ReadOnly | QIODevice::Text);
+//    if (loginFile.isOpen())
+//    {
+//        QString value = loginFile.readAll();
+//        loginFile.close();
+//        QJsonParseError err;
+//        QJsonDocument doc = QJsonDocument::fromJson(value.toUtf8(), &err);
+//        if (err.error != QJsonParseError::NoError)     //若解析错误
+//        {
+//            printf("can't open the json file!\n");
+//            close();
+//            exit(0);
+//        }
+//        else
+//        {
+//            QJsonArray arr = doc.array();
+//            for (int i = 0; i < arr.size(); ++i)
+//            {
+//                QJsonValue val = arr.at(i);
+//                qDebug() << val["name"];
+//                qDebug() << val["password"];
+//                login[val["name"].toString()] = val["password"].toString();    //登记用户信息
+//            }
+//        }
+//    }
+//    else    // 其实应该不会发生
+//    {
+//        QMessageBox::information(this, QString("错误"), QString("无法获取用户信息，即将关闭!\n"));
+//        this->close();
+//        exit(0);
+//    }
 }
 
 MainWindow::~MainWindow()
@@ -135,4 +137,32 @@ void MainWindow::newMsg(QString msg)
 void MainWindow::old_user(QString user)
 {
     text.addItem(user);
+}
+
+void MainWindow::show_img(QByteArray img)
+{
+    if (!img.isEmpty())
+        {
+            QPixmap tmp;
+            qUncompress(img);      //解压缩操作
+            tmp.loadFromData(img, "PNG");
+            QBuffer buffer;
+            buffer.open(QIODevice::ReadWrite);
+            tmp.save(&buffer, "PNG");                 //在buffer中存储这个图片，后缀是.png
+//            quint32 pix_len = (quint32)buffer.data().size();
+
+            QByteArray dataArray;
+            dataArray.append(buffer.data());
+
+            QGraphicsScene* scene = new QGraphicsScene;
+            scene->addPixmap(tmp);
+            view->setScene(scene);
+            view->show();
+
+//            QMessageBox::information(this, "通知", "已接收图像");
+        }
+        else
+        {
+            QMessageBox::critical(this, "搞笑", "<h1>图片未传送到</h1>");
+        }
 }
