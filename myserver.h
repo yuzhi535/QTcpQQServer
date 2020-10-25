@@ -24,7 +24,6 @@ public:
     ~MyServer();
     void recvUserInfo(QMap<QString, QString>& tmp);
     void addUserInfo(QString& name, QString& password);
-    bool isInUser(QString name);
     void parseName(QString& str, QString& name, QString& pass);
     void mySleep(qint32 sec);
     qint32 getIndex() { return ++index; }

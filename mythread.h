@@ -22,7 +22,6 @@ public:
     QString getName() { return name; }
     void setSocketDescriptor(qintptr target) { socket->setSocketDescriptor(target); }
     void createFile(QByteArray& dat, QString suffix);
-    QString intToString(int num);
     qint32 getId() {return m_id; }
     qint32 getIndex() {
         return m_id;

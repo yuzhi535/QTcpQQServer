@@ -12,13 +12,6 @@ MyServer::~MyServer()
 
 }
 
-bool MyServer::isInUser(QString name)
-{
-    if (user.contains(name))
-        return false;
-    return true;
-}
-
 void MyServer::parseName(QString& str, QString& name, QString& pass)
 {
     bool flag = true;
@@ -47,6 +40,7 @@ void MyServer::mySleep(qint32 sec)
 
 void MyServer::incomingConnection(qintptr socketDescriptor)
 {
+    QSharedPointer<MyClient> ptr;
     MyClient** tmp_client = new MyClient*();
     *tmp_client = new MyClient();
     MyClient* client = *tmp_client;    //注意变量生命周期
@@ -55,7 +49,6 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
     MyThread* m_thread = new MyThread(client, id);
     (*tmp_client)->setId(id);
 
-
     QString name, pass, login;
     client->waitForReadyRead();     //延时 3e4 msecs，进行阻塞
     name = client->readAll();
@@ -63,8 +56,8 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
     parseName(name, login, pass);
     client->setName(login); client->setPass(pass);
 
-
     m_thread->setName(login);
+    qDebug() << m_thread->getName();
     user[login] = pass;
 
     login = QTime::currentTime().toString() + ":  " + login + ":  连接服务器";
@@ -73,8 +66,6 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
 
     emit newUser(login);
 
-    qDebug() << (*tmp_client)->getId() << "asdfasdfasdfasdfasdf";
-
     myClient.push_back(*tmp_client);
 
 //    (*tmp_client)->moveToThread(m_thread);
@@ -82,9 +73,6 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
     connect(m_thread, SIGNAL(newMsg(QString)), this, SLOT(newMsg(QString)));
     connect(m_thread, SIGNAL(olduser(QString, qint32)), this, SLOT(old_User(QString, qint32)));
     connect(m_thread, SIGNAL(new_img(QByteArray)), this, SLOT(sendImg(QByteArray)));
-
-    for (auto i = myClient.begin(); i != myClient.end(); ++i)
-        qDebug() << (*i)->getId();
 
     m_thread->start();      //开始次线程
 }
@@ -104,8 +92,6 @@ void MyServer::sendImg(QByteArray file)
 {
     emit showImg(file);
 
-
-
     auto len = file.size();
     QByteArray s;
     while (len)                             //先发送图片大小，让服务端做好准备
@@ -118,10 +104,7 @@ void MyServer::sendImg(QByteArray file)
 
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
     {
-        (*i)->write(s);
-        (*i)->waitForBytesWritten();
-        QThread::msleep(100);
-        (*i)->write(file);
+        (*i)->write(s + file);
         (*i)->waitForBytesWritten();
         QThread::msleep(100);
     }
@@ -144,14 +127,15 @@ void MyServer::old_User(QString user, qint32 id)
     {
         if ((*i)->getId() == id)
         {
-            myClient.erase(i);
+//            (*i)->deleteLater();    不知为何加上这一句会在关闭最后一个socket后程序崩溃
+//            不过不手动释放内存也可以，server会在最后自动释放socket内存
+            i = myClient.erase(i);
         }
         if (myClient.size() == 0)
             break;
     }
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
     {
-        qDebug() << (*i)->getId();
         (*i)->write(user.toUtf8());
         mySleep(100);
     }
