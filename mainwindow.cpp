@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(server, SIGNAL(showImg(QByteArray)), this, SLOT(show_img(QByteArray)));  //显示图片
 
 
-    //用户信息处理
+//    用户信息处理
 //    QMap<QString, QString> login;
 //    QFile loginFile(QString("login.json"));
 //    loginFile.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -126,7 +126,7 @@ void MainWindow::on_button_1_clicked()
 
 void MainWindow::newUser(QString name)
 {
-    text.addItem(name);
+    text.addItem(name.mid(1, name.size() - 2));
 }
 
 void MainWindow::newMsg(QString msg)
@@ -144,12 +144,10 @@ void MainWindow::show_img(QByteArray img)
     if (!img.isEmpty())
         {
             QPixmap tmp;
-            qUncompress(img);      //解压缩操作
             tmp.loadFromData(img, "PNG");
             QBuffer buffer;
             buffer.open(QIODevice::ReadWrite);
             tmp.save(&buffer, "PNG");                 //在buffer中存储这个图片，后缀是.png
-//            quint32 pix_len = (quint32)buffer.data().size();
 
             QByteArray dataArray;
             dataArray.append(buffer.data());

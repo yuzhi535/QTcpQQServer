@@ -18,13 +18,13 @@ void MyServer::parseName(QString& str, QString& name, QString& pass)
     int j = 1;
     for (int i = j; i < str.size(); ++i)
     {
-        if (str[i] == '\t' && flag)
+        if (str[i] == '\b' && flag)
         {
             flag = false;
             name = str.mid(j, i - j);
             j = i + 1;
         }
-        else if (str[i] == '\t')
+        else if (str[i] == '\b')
             pass = str.mid(j, i - j);
     }
 }
@@ -47,6 +47,7 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
     client->setSocketDescriptor(socketDescriptor);
     qint32 id = getIndex();
     MyThread* m_thread = new MyThread(client, id);
+    myClient.push_back(*tmp_client);
     (*tmp_client)->setId(id);
 
     QString name, pass, login;
@@ -62,11 +63,16 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
 
     login = QTime::currentTime().toString() + ":  " + login + ":  连接服务器";
 
-    client->write(login.toUtf8());
+//    client->write(login.toUtf8());
+
+    login = "\b" + login;
+    login += "\b";
+
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+        (*i)->write(login.toUtf8());
 
     emit newUser(login);
 
-    myClient.push_back(*tmp_client);
 
 //    (*tmp_client)->moveToThread(m_thread);
 
@@ -128,7 +134,7 @@ void MyServer::old_User(QString user, qint32 id)
         if ((*i)->getId() == id)
         {
 //            (*i)->deleteLater();    不知为何加上这一句会在关闭最后一个socket后程序崩溃
-//            不过不手动释放内存也可以，server会在最后自动释放socket内存
+//           不过不手动释放内存也可以，server会在最后自动释放socket内存
             i = myClient.erase(i);
         }
         if (myClient.size() == 0)
@@ -137,6 +143,7 @@ void MyServer::old_User(QString user, qint32 id)
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
     {
         (*i)->write(user.toUtf8());
+//        QThread::msleep(100);
         mySleep(100);
     }
 }
