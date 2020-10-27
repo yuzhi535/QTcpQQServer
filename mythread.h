@@ -7,6 +7,7 @@
 #include <QTime>
 #include <QDir>
 #include <QApplication>
+#include <QDate>
 
 class MyThread : public QThread
 {

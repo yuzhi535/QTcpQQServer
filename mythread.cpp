@@ -56,7 +56,7 @@ void MyThread::sendMsg()
             QTime time = QTime::currentTime();
             emit newMsg(time.toString() + " " + getName() + ": " + msg);
             createFile(data, ".txt");
-            qDebug() << data.size() << "msg!";
+//            qDebug() << data.size() << "msg!";
         }
         else if (msg.size() && msg[0] == '\r')
         {
@@ -74,7 +74,6 @@ void MyThread::sendMsg()
                 emit new_img(data.mid(index + 1));
                 msleep(100);
                 emit newMsg(time.toString() + " " + getName() + ": 上传了一张图片");
-//                emit sho
             }
         }
     }
@@ -96,28 +95,28 @@ void MyThread::disConnect()
 void MyThread::createFile(QByteArray &data, QString suffix)
 {
     QString th = getName();
-    th = QString("/") + th;
+    th = QString("/users/") + th;
     QString path = QDir::currentPath() + th;   //存储到本地文件夹
     path = QDir::toNativeSeparators(path);
     QDir dir(path);
     if (!dir.exists())
         dir.mkpath(path);
-    QTime time(QTime::currentTime());
-    QString curr = intToQString(QTime(0, 0, 0).secsTo(time));
+    QString curr = QDate::currentDate().toString();
     curr = "/" + curr;
     QString name(path + curr + suffix);
     QFile file;                                  //创建新文件
     name = QDir::toNativeSeparators(name);
     file.setFileName(name);
-    file.open(QIODevice::WriteOnly);
+    file.open(QIODevice::ReadWrite | QIODevice::Append);
+    QTime time(QTime::currentTime());
     if (!file.exists())
     {
         file.close();
-        file.open(QIODevice::ReadWrite);
+        file.open(QIODevice::ReadWrite | QIODevice::Append);
     }
     if (file.isOpen())
     {
-        file.write(data);
+        file.write(time.toString().toUtf8() + ": " + data + "\n");
         file.close();
     }
 }

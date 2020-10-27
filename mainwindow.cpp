@@ -61,9 +61,9 @@ MainWindow::MainWindow(QWidget *parent)
     });
     server = new MyServer();
 
-    connect(server, SIGNAL(newUser(QString)), this, SLOT(newUser(QString)));   //新用户
-    connect(server, SIGNAL(new_Msg(QString)), this, SLOT(newMsg(QString)));    //新消息
-    connect(server, SIGNAL(oldUser(QString)), this, SLOT(old_user(QString)));  //断开连接
+    connect(server, SIGNAL(newUser(QString)), this, SLOT(newUser(QString)));         //新用户
+    connect(server, SIGNAL(new_Msg(QString)), this, SLOT(newMsg(QString)));          //新消息
+    connect(server, SIGNAL(oldUser(QString)), this, SLOT(old_user(QString)));        //断开连接
     connect(server, SIGNAL(showImg(QByteArray)), this, SLOT(show_img(QByteArray)));  //显示图片
 
 

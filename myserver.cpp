@@ -51,7 +51,7 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
     (*tmp_client)->setId(id);
 
     QString name, pass, login;
-    client->waitForReadyRead();     //延时 3e4 msecs，进行阻塞
+    client->waitForReadyRead();       //延时 3e4 msecs，进行阻塞
     name = client->readAll();
     qDebug() << "success connect";
     parseName(name, login, pass);
