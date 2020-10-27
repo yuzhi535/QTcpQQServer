@@ -127,7 +127,6 @@ void MyServer::newMsg(QString msg)
 
 void MyServer::old_User(QString user, qint32 id)
 {
-
     emit oldUser(user);
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
     {

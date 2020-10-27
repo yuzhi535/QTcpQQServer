@@ -23,6 +23,16 @@ MainWindow::MainWindow(QWidget *parent)
     label_1.setText(QString("ip"));
     label_2.setText(QString("port"));
 
+    menu = menuBar()->addMenu(tr("about"));
+    about = new QAction("author", this);
+    menu->addAction(about);
+
+    connect(about, &QAction::triggered, [&]() {
+        QMessageBox::information(this, QString("通知"),
+                                 QString("<h1>作者：周誉喜</h1><h2>代码已放在github上</h2><h3>"
+                                         "地址: https://github.com/yuzhi535/QTcpQQServer</h3>"));
+    });
+
     this->setCentralWidget(&contral);
     contral.setLayout(&m_layout);
     //length 20 width 16

@@ -17,6 +17,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QMenu>
+#include <QMenuBar>
+#include <QAction>
 
 
 #include "myserver.h"
@@ -55,6 +58,10 @@ private:
     QWidget contral;          //contral widget
     QGridLayout m_layout;     //layout
     QGraphicsView* view;
+//    QMenuBar* bar;
+    QMenu* menu;
+    QAction* about;
+
 
     MyServer* server;
 };
