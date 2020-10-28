@@ -60,7 +60,7 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
     qDebug() << m_thread->getName();
     user[login] = pass;
 
-    login = QTime::currentTime().toString() + ":  " + login + ":  连接服务器";
+    login = QDate::currentDate().toString() + ". " + QTime::currentTime().toString() + "$  " + login + ":  连接服务器";
 
     login = "\b" + login;
     login += "\b";

@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&text, &QListWidget::doubleClicked, [&] () {
         QString msg = text.currentItem()->text();
-        QMessageBox::information(this, QString("通知"), QString("<h2>" + msg + "</h2>"));
+        QMessageBox::information(this, QString("通知"), QString("<h3>" + msg + "</h3>"));
     });
 
     this->setCentralWidget(&contral);
@@ -176,6 +176,6 @@ void MainWindow::show_img(QByteArray img)
         }
         else
         {
-            QMessageBox::critical(this, "搞笑", "<h1>图片未传送到</h1>");
+            QMessageBox::critical(this, "通知", "<h1>图片未传送到</h1>");
         }
 }

@@ -32,7 +32,7 @@ void MyThread::run()
             QTime time = QTime::currentTime();
             //将新连接显示到屏幕上
 
-            emit newUser(time.toString() + "  " + getName() + "连接上服务器!");
+            emit newUser(QDate::currentDate().toString() + ". " + time.toString() + "$ " + getName() + "连接上服务器! ");
 
             connect(socket, SIGNAL(readyRead()), this, SLOT(sendMsg()));
             connect(socket, &QAbstractSocket::disconnected, this, &MyThread::disConnect);
@@ -40,6 +40,7 @@ void MyThread::run()
         else
         {
             qDebug() << "连接无效";
+            disConnect();
         }
     }
     exec();
@@ -54,7 +55,7 @@ void MyThread::sendMsg()
         if (msg.size() != 0 && msg[0] != '\r')
         {
             QTime time = QTime::currentTime();
-            emit newMsg(time.toString() + " " + getName() + ": " + msg);
+            emit newMsg(QDate::currentDate().toString() + ". " + time.toString() + "$ " + getName() + ": " + msg);
             createFile(data, ".txt");
 //            qDebug() << data.size() << "msg!";
         }
@@ -83,7 +84,8 @@ void MyThread::disConnect()
 {
     QString msg("断开连接");
 
-    emit olduser( QTime::currentTime().toString() + ": " + getName() + msg, getIndex());
+    emit olduser( QDate::currentDate().toString() + ". " +
+                  QTime::currentTime().toString() + "$ " + getName() + msg, getIndex());
 
     //全部断连
     disconnect(this, SIGNAL(newMsg(QString)), 0, 0);
@@ -117,7 +119,7 @@ void MyThread::createFile(QByteArray &data, QString suffix)
     }
     if (file.isOpen())
     {
-        file.write(time.toString().toUtf8() + ": " + data + "\n");
+        file.write( QDate::currentDate().toString().toUtf8() + ". " + time.toString().toUtf8() + "$ " + data + "\n");
         file.close();
     }
 }
