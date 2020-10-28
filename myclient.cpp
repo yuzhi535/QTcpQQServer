@@ -7,7 +7,6 @@ MyClient::MyClient()
 
 MyClient::~MyClient()
 {
-    delete socket;
 }
 
 void MyClient::setName(QString name)

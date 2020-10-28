@@ -24,7 +24,7 @@ QString MyThread::intToQString(qint32 num)
 
 void MyThread::run()
 {
-    socket->setReadBufferSize(0);   //缓冲区无限大
+    socket->setReadBufferSize(0);                //缓冲区无限大
     if (socket->isValid())
     {
         if (socket->waitForConnected())
@@ -81,10 +81,11 @@ void MyThread::sendMsg()
 
 void MyThread::disConnect()
 {
-    QString msg(": 断开连接");
+    QString msg("断开连接");
 
     emit olduser( QTime::currentTime().toString() + ": " + getName() + msg, getIndex());
 
+    //全部断连
     disconnect(this, SIGNAL(newMsg(QString)), 0, 0);
     disconnect(this, SIGNAL(olduser(QString, qint32)), 0, 0);
     disconnect(this, SIGNAL(new_img(QByteArray)), 0, 0);
@@ -96,7 +97,7 @@ void MyThread::createFile(QByteArray &data, QString suffix)
 {
     QString th = getName();
     th = QString("/users/") + th;
-    QString path = QDir::currentPath() + th;   //存储到本地文件夹
+    QString path = QDir::currentPath() + th;     //存储到本地文件夹
     path = QDir::toNativeSeparators(path);
     QDir dir(path);
     if (!dir.exists())

@@ -40,7 +40,6 @@ void MyServer::mySleep(qint32 sec)
 
 void MyServer::incomingConnection(qintptr socketDescriptor)
 {
-    QSharedPointer<MyClient> ptr;
     MyClient** tmp_client = new MyClient*();
     *tmp_client = new MyClient();
     MyClient* client = *tmp_client;    //注意变量生命周期
@@ -63,8 +62,6 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
 
     login = QTime::currentTime().toString() + ":  " + login + ":  连接服务器";
 
-//    client->write(login.toUtf8());
-
     login = "\b" + login;
     login += "\b";
 
@@ -73,14 +70,11 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
 
     emit newUser(login);
 
-
-//    (*tmp_client)->moveToThread(m_thread);
-
     connect(m_thread, SIGNAL(newMsg(QString)), this, SLOT(newMsg(QString)));
     connect(m_thread, SIGNAL(olduser(QString, qint32)), this, SLOT(old_User(QString, qint32)));
     connect(m_thread, SIGNAL(new_img(QByteArray)), this, SLOT(sendImg(QByteArray)));
 
-    m_thread->start();      //开始次线程
+    m_thread->start();                     //开始次线程
 }
 
 QString intToQString(int num)

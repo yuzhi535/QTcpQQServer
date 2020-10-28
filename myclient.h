@@ -20,7 +20,6 @@ public:
     void setId(qint32 id) { m_id = id; }
 
 private:
-    QTcpSocket* socket;
     QString m_name;
     QString m_pass;
     qint32 m_id;
