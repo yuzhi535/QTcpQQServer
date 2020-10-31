@@ -3,9 +3,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QMap>
-//#include <iostream>
 
-//#include <
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,8 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     label_1.setText(QString("ip"));
     label_2.setText(QString("port"));
 
-    menu = menuBar()->addMenu(tr("about"));
-    about = new QAction("author", this);
+    menu = menuBar()->addMenu(tr("关于"));
+    about = new QAction("作者", this);
     menu->addAction(about);
 
     connect(about, &QAction::triggered, [&]() {

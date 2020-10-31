@@ -57,14 +57,14 @@ void MyThread::sendMsg()
             QTime time = QTime::currentTime();
             emit newMsg(QDate::currentDate().toString() + ". " + time.toString() + "$ " + getName() + ": " + msg);
             createFile(data, ".txt");
-//            qDebug() << data.size() << "msg!";
+//            qDebug() << "size=" <<data.size() << "msg!";
         }
         else if (msg.size() && msg[0] == '\r')
         {
             int index = 1;
             for(; index < msg.size() && msg[index] != '\r'; ++index);
             int size = data.mid(1, index - 1).toInt();
-            qDebug() << "size=" << size << "img!";
+//            qDebug() << "size=" << size << "img!";
             QTime time = QTime::currentTime();
             if (size > data.mid(index + 1).size())
             {
