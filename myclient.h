@@ -5,6 +5,10 @@
 #include <QTcpSocket>
 #include <QThread>
 
+/**
+ * @brief The MyClient class
+ * @note to implement a custom client
+ */
 class MyClient : public QTcpSocket
 {
     Q_OBJECT

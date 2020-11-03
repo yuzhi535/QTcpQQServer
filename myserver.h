@@ -16,6 +16,10 @@
 
 using std::list;
 
+/**
+ * @brief The MyServer class
+ * @target communicate with other client and send signals to mainwindow
+ */
 class MyServer : public QTcpServer
 {
     Q_OBJECT

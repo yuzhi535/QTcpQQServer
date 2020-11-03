@@ -9,6 +9,11 @@
 #include <QApplication>
 #include <QDate>
 
+
+/**
+ * @brief The MyThread class
+ * @target to implement multithread and recieve info from other client
+ */
 class MyThread : public QThread
 {
     Q_OBJECT

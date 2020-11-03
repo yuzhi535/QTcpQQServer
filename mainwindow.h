@@ -28,6 +28,10 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+/**
+ * @brief The MainWindow class
+ * @note main window
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -46,7 +50,7 @@ public slots:
     void old_user(QString user);
     void show_img(QByteArray img);
 
-private:
+private:    
     Ui::MainWindow *ui;
     QPushButton button_1;     //连接
     QPushButton button_2;     //退出
@@ -58,10 +62,8 @@ private:
     QWidget contral;          //contral widget
     QGridLayout m_layout;     //layout
     QGraphicsView* view;
-//    QMenuBar* bar;
     QMenu* menu;
     QAction* about;
-
 
     MyServer* server;
 };
