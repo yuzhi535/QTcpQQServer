@@ -62,11 +62,19 @@ void MyServer::incomingConnection(qintptr socketDescriptor)
 
     login = QDate::currentDate().toString() + ". " + QTime::currentTime().toString() + "$  " + login + ":  连接服务器";
 
-    login = "\b" + login;
-    login += "\b";
+    login = "\r" + login;
 
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
+    {
+         login = (*i)->getName() + "\b" + login;
+    }
+    login = '\b' + login;
+
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+    {
+
         (*i)->write(login.toUtf8());
+    }
 
     emit newUser(login);
 
@@ -113,8 +121,12 @@ void MyServer::sendImg(QByteArray file)
 void MyServer::newMsg(QString msg)
 {
     emit new_Msg(msg);
-    msg = "\b" + msg;
-    msg += "\b";
+    msg = "\r" + msg;
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+    {
+        msg = (*i)->getName() + "\b" + msg;
+    }
+    msg = '\b' + msg;
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
         (*i)->write(msg.toUtf8());
 }
@@ -133,6 +145,14 @@ void MyServer::old_User(QString user, qint32 id)
         if (myClient.size() == 0)
             break;
     }
+
+    user = '\r' + user;
+    for (auto i = myClient.begin(); i != myClient.end(); ++i)
+    {
+         user = (*i)->getName() + "\b" + user;
+    }
+    user = '\b' + user;
+
     for (auto i = myClient.begin(); i != myClient.end(); ++i)
     {
         (*i)->write(user.toUtf8());

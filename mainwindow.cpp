@@ -141,7 +141,8 @@ void MainWindow::on_button_1_clicked()
 
 void MainWindow::newUser(QString name)
 {
-    text.addItem(name.mid(1, name.size() - 2));
+     name.remove(QRegularExpression("\b.*\b\r"));
+    text.addItem(name);
 }
 
 void MainWindow::newMsg(QString msg)
