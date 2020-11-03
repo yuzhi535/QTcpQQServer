@@ -75,6 +75,8 @@ void MyThread::sendMsg()
                 emit new_img(data.mid(index + 1));
                 msleep(100);
                 emit newMsg(time.toString() + " " + getName() + ": 上传了一张图片");
+                auto file = data.mid(index + 1);
+                createFile(file, ".png");
             }
         }
     }
@@ -95,7 +97,7 @@ void MyThread::disConnect()
     wait();
 }
 
-void MyThread::createFile(QByteArray &data, QString suffix)
+void MyThread::createFile(QByteArray& data, QString suffix)
 {
     QString th = getName();
     th = QString("/users/") + th;
@@ -117,9 +119,14 @@ void MyThread::createFile(QByteArray &data, QString suffix)
         file.close();
         file.open(QIODevice::ReadWrite | QIODevice::Append);
     }
-    if (file.isOpen())
+    if (file.isOpen() && suffix == ".txt")
     {
         file.write( QDate::currentDate().toString().toUtf8() + ". " + time.toString().toUtf8() + "$ " + data + "\n");
+        file.close();
+    }
+    else if (file.isOpen() && suffix == ".png")
+    {
+        file.write(data);
         file.close();
     }
 }
