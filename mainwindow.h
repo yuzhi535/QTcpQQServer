@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QDir>
 #include <QBuffer>
+#include <QMutex>
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -61,7 +62,7 @@ private:
     QListWidget text;         //show the info
     QWidget contral;          //contral widget
     QGridLayout m_layout;     //layout
-    QGraphicsView* view;
+    QGraphicsView* view;      //view
     QMenu* menu;
     QAction* about;
 

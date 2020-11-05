@@ -48,36 +48,80 @@ void MyThread::run()
 
 void MyThread::sendMsg()
 {
+    static int m_flag = 0;
     QByteArray data = socket->readAll();
     if (!data.isEmpty())
     {
         QString msg = data;
-        if (msg.size() != 0 && msg[0] != '\r')
+        if (msg.size() != 0 && m_flag == 0 && msg[0] != '\r')
         {
             QTime time = QTime::currentTime();
             emit newMsg(QDate::currentDate().toString() + ". " + time.toString() + "$ " + getName() + ": " + msg);
             createFile(data, ".txt");
 //            qDebug() << "size=" <<data.size() << "msg!";
         }
-        else if (msg.size() && msg[0] == '\r')
+        else if (msg.size() && (msg[0] == '\r' || m_flag))
         {
-            int index = 1;
-            for(; index < msg.size() && msg[index] != '\r'; ++index);
-            int size = data.mid(1, index - 1).toInt();
-//            qDebug() << "size=" << size << "img!";
-            QTime time = QTime::currentTime();
-            if (size > data.mid(index + 1).size())
+            static QByteArray recvData;
+            static int size;
+            if (!m_flag)     //若是接收的图片的第一部分
             {
-                emit newMsg(time.toString() + " " + getName() + ": " + "发送图片失败");
+                int index = 1;
+                for(; index < msg.size() && msg[index] != '\r'; ++index);
+
+                recvData += data.mid(index + 1);
+                size = data.mid(1, index - 1).toInt();
+                qDebug() << "size=" << size << "img!";
+                if (size > recvData.size())
+                {
+                    ++m_flag;
+                    qDebug() << "real=" << recvData.size();
+                }
+                else
+                {
+                    m_flag = 0;
+                    size = 0;
+                    emit new_img(recvData);
+                    msleep(100);
+                    emit newMsg(QDateTime::currentDateTime().toString() + " " + getName() + ": 上传了一张图片");
+                    auto file = recvData;
+                    createFile(file, ".png");
+                    recvData.clear();
+                }
             }
             else
             {
-                emit new_img(data.mid(index + 1));
-                msleep(100);
-                emit newMsg(time.toString() + " " + getName() + ": 上传了一张图片");
-                auto file = data.mid(index + 1);
-                createFile(file, ".png");
+                recvData += data;
+                if (size > recvData.size())
+                {
+                    if (m_flag > 5)
+                    {
+                        m_flag = 0;
+                        size = 0;
+                        recvData.clear();
+                        emit newMsg(QTime::currentTime().toString() + " " + getName() + ": " + "发送图片失败");
+                        qDebug() << "=real" << recvData.size();
+                    }
+                    else
+                    {
+                        qDebug() << "m_flag " << m_flag;
+                        ++m_flag;
+                        qDebug() << "real=" << recvData.size();
+                    }
+                }
+                else
+                {
+                    m_flag = 0;
+                    size = 0;
+                    emit new_img(recvData);
+                    msleep(100);
+                    emit newMsg(QDateTime::currentDateTime().toString() + " " + getName() + ": 上传了一张图片");
+                    auto file = recvData;
+                    createFile(file, ".png");
+                    recvData.clear();
+                }
             }
+
         }
     }
 }

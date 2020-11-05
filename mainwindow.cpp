@@ -158,23 +158,26 @@ void MainWindow::old_user(QString user)
 void MainWindow::show_img(QByteArray img)
 {
     if (!img.isEmpty())
-        {
-            QPixmap tmp;
-            tmp.loadFromData(img, "PNG");
-            QBuffer buffer;
-            buffer.open(QIODevice::ReadWrite);
-            tmp.save(&buffer, "PNG");                 //在buffer中存储这个图片，后缀是.png
+    {
+        QMutex mutex;
+        mutex.lock();
+        QPixmap tmp;
+        tmp.loadFromData(img, "PNG");
+        QBuffer buffer;
+        buffer.open(QIODevice::ReadWrite);
+        tmp.save(&buffer, "PNG");                 //在buffer中存储这个图片，后缀是.png
 
-            QByteArray dataArray;
-            dataArray.append(buffer.data());
+        QByteArray dataArray;
+        dataArray.append(buffer.data());
 
-            QGraphicsScene* scene = new QGraphicsScene;
-            scene->addPixmap(tmp);
-            view->setScene(scene);
-            view->show();
-        }
-        else
-        {
-            QMessageBox::critical(this, "通知", "<h1>图片未传送到</h1>");
-        }
+        QGraphicsScene* scene = new QGraphicsScene;
+        scene->addPixmap(tmp);
+        view->setScene(scene);
+        view->show();
+        mutex.unlock();
+    }
+    else
+    {
+        QMessageBox::critical(this, "通知", "<h1>图片未传送到</h1>");
+    }
 }
