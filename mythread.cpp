@@ -21,7 +21,6 @@ QString MyThread::intToQString(qint32 num)
     return re;
 }
 
-
 void MyThread::run()
 {
     socket->setReadBufferSize(0);                //缓冲区无限大
@@ -53,14 +52,13 @@ void MyThread::sendMsg()
     if (!data.isEmpty())
     {
         QString msg = data;
-        if (msg.size() != 0 && m_flag == 0 && msg[0] != '\r')
+        if (msg.size() != 0 && m_flag == 0 && msg[0] != '\r')   //如果是接收到文本
         {
             QTime time = QTime::currentTime();
             emit newMsg(QDate::currentDate().toString() + ". " + time.toString() + "$ " + getName() + ": " + msg);
             createFile(data, ".txt");
-//            qDebug() << "size=" <<data.size() << "msg!";
         }
-        else if (msg.size() && (msg[0] == '\r' || m_flag))
+        else if (msg.size() && (msg[0] == '\r' || m_flag))     //如果接收到的是图片
         {
             static QByteArray recvData;
             static int size;
@@ -121,7 +119,6 @@ void MyThread::sendMsg()
                     recvData.clear();
                 }
             }
-
         }
     }
 }
@@ -131,7 +128,7 @@ void MyThread::disConnect()
     QString msg("断开连接");
 
     emit olduser( QDate::currentDate().toString() + ". " +
-                  QTime::currentTime().toString() + "$ " + getName() + msg, getIndex());
+                  QTime::currentTime().toString() + "$ " + getName() + ": " + msg, getIndex());
 
     //全部断连
     disconnect(this, SIGNAL(newMsg(QString)), 0, 0);
